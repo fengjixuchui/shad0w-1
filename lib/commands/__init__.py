@@ -24,5 +24,10 @@ __all__ = [
            "lockless",
            "safetykatz",
            "sharpdump",
-           "sharpsocks"
+           "sharpsocks",
+           "sharphound",
+           "watson",
+           "dotnet",
+           "meterpreter",
+           "psh"
           ]

