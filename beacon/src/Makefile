@@ -19,7 +19,7 @@ WIN_C_SOURCES=debug.c core.c beacon.c syscalls.c loader.c
 WIN_STDLIB_DIR=../lib/stdlib/
 WIN_STDLIB_SOURCES=$(WIN_STDLIB_DIR)listdirs.c $(WIN_STDLIB_DIR)readfile.c \
 				   $(WIN_STDLIB_DIR)makedirectory.c $(WIN_STDLIB_DIR)removefile.c \
-				   $(WIN_STDLIB_DIR)getdir.c $(WIN_STDLIB_DIR)changedir.c $(WIN_STDLIB_DIR)whoami.c
+				   $(WIN_STDLIB_DIR)getdir.c $(WIN_STDLIB_DIR)changedir.c $(WIN_STDLIB_DIR)getpid.c
 WIN_STDLIB_FLAGS=-static -shared -w
 WIN_STDLIB_OUT=stdlib.lib
 
@@ -36,7 +36,7 @@ win_stdlib_64:
 	$(WIN_CC) -c $(WIN_STDLIB_SOURCES) $(WIN_STDLIB_FLAGS) $(WIN_STDLIB_FLAGS)
 
 win_beacon_64_debug:
-	$(WIN_CC) $(WIN_STDLIB_SOURCES) $(WIN_VITAL_SOURCES) $(WIN_SECURE_SOURCES) $(WIN_C_SOURCES) -o $(WIN_EXE_OUT) $(WIN_LINK) $(WIN_FLAGS)
+	$(WIN_CC) $(WIN_STDLIB_SOURCES) $(WIN_VITAL_SOURCES) $(WIN_SECURE_SOURCES) $(WIN_C_SOURCES) -o $(WIN_EXE_OUT) $(WIN_LINK) $(WIN_FLAGS) -DDEBUG_MODE
 
 win_beacon_64:
 	$(WIN_CC) $(WIN_STDLIB_SOURCES) $(WIN_VITAL_SOURCES) $(WIN_SECURE_SOURCES) $(WIN_C_SOURCES) -o $(WIN_EXE_OUT) $(WIN_LINK) $(WIN_FLAGS) $(WIN_HIDE_FLAGS)

