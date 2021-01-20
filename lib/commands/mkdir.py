@@ -5,10 +5,11 @@
 import json
 import argparse
 
-__description__ = "Create a new directory on the target"
+__description__ = "Create a new directory on a target"
 __author__ = "@_batsec_"
+__type__ = "file system"
 
-EXEC_ID      = 0x4000
+EXEC_ID = 0x4000
 OPCODE_MKDIR = 0x5000
 
 ERROR = False
@@ -20,9 +21,11 @@ def error(message):
     ERROR = True
     error_list += f"\033[0;31m{message}\033[0m\n"
 
+
 def exit(status=0, message=None): 
-    if message != None: print(message)
-    return
+    if message is not None:
+        print(message)
+
 
 def mkdir_callback(shad0w, data):
     shad0w.debug.log(data, log=True, pre=False)
@@ -37,7 +40,7 @@ def main(shad0w, args):
     
     # check we actually have a beacon
     if shad0w.current_beacon is None:
-        shad0w.debug.error("ERROR: No active beacon")
+        shad0w.debug.error("ERROR: No active beacon.")
         return
 
     # usage examples
@@ -58,7 +61,7 @@ mkdir "C:\\Users\\thejoker\\hello\\"
     # setup the args
     parse.add_argument("name", nargs='*', help="Name of the directory you want to create")
 
-    # make sure we dont die from weird args
+    # make sure we don't die from weird args
     try:
         args = parse.parse_args(args[1:])
     except:

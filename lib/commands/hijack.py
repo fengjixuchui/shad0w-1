@@ -6,8 +6,9 @@ import os
 import json
 import base64
 
-__description__ = "Hijack a running process, forcing it to run your shellcode"
+__description__ = "Hijack a running process and force it to run your shellcode"
 __author__ = "@_batsec_"
+__type__ = "process"
 
 # identify the task as shellcode execute
 from lib.basecommand import BaseCommand
@@ -62,7 +63,7 @@ hijack -p 4267 -f shellcode.bin
     def run(self, shad0w):
         rcode = get_file_data(self.args.file)
         if rcode is None:
-            shad0w.debug.error(f"Shellcode file '{self.args.file}' does not exist")
+            shad0w.debug.error(f"Shellcode file '{self.args.file}' does not exist.")
             return
 
         inject_info = build_inject_info(self.args, rcode)
@@ -73,7 +74,7 @@ hijack -p 4267 -f shellcode.bin
 def main(shad0w, args):
     # check we actually have a beacon
     if shad0w.current_beacon is None:
-        shad0w.debug.log("ERROR: No active beacon", log=True)
+        shad0w.debug.log("ERROR: No active beacon.", log=True)
         return
 
     cmd = HijackCommand(args)

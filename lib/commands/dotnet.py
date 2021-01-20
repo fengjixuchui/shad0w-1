@@ -4,10 +4,12 @@
 
 from lib import buildtools
 
-__description__ = "Get the installed .NET versions"
+__description__ = "Show installed .NET versions"
 __author__ = "@_batsec_"
+__type__ = "enumeration"
 
 EXEC_ID = 0x3000
+
 
 def format_data(shad0w, data):
     data = data.splitlines()
@@ -24,10 +26,11 @@ def format_data(shad0w, data):
             if "v" in line:
                 shad0w.debug.log(f"-\t{line}", log=True, pre=False)
 
+
 def dotnet_callback(shad0w, data):
-    # well its kinda true
+    # well its kind of true
     if "v" not in data:
-        shad0w.debug.error(".NET is not installed")
+        shad0w.debug.error(".NET is not installed.")
         return ""
 
     data = data.split("C:\\Windows\\Microsoft.NET\\Framework64\\")
@@ -45,7 +48,7 @@ def main(shad0w, args):
 
     # check we actually have a beacon
     if shad0w.current_beacon is None:
-        shad0w.debug.error("ERROR: No active beacon")
+        shad0w.debug.error("ERROR: No active beacon.")
         return
 
     # clone all the source files

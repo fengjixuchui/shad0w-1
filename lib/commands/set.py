@@ -4,20 +4,23 @@
 
 import argparse
 
-__description__ = "Set the value of variables"
+__description__ = "Set the value of a variable"
+__type__ = "beacon"
 
 ERROR = False
 error_list = ""
 
-# let argparse error and exit nice
+
 def error(message):
     global ERROR, error_list
     ERROR = True
     error_list += f"\033[0;31m{message}\033[0m\n"
 
+
 def exit(status=0, message=None):
     if message != None: print(message)
     return
+
 
 def main(shad0w, args):
     global ERROR
@@ -44,7 +47,7 @@ set -v MsfStageSize -d 14
     parse.add_argument("-v", "--variable", help="Variable name")
     parse.add_argument("-d", "--data", help="Data to store in the variable")
 
-    # make sure we dont die from weird args
+    # make sure we don't die from weird args
     try:
         args = parse.parse_args(args[1:])
     except:

@@ -10,6 +10,7 @@ from lib import buildtools
 
 __description__ = "Inject a new beacon into a process"
 __author__ = "@_batsec_"
+__type__ = "process"
 
 # identify the task as shellcode execute
 from lib.basecommand import BaseCommand
@@ -140,7 +141,7 @@ binject -b x64/windows/secure -p 9207
 def main(shad0w, args):
     # check we actually have a beacon
     if shad0w.current_beacon is None:
-        shad0w.debug.log("ERROR: No active beacon", log=True)
+        shad0w.debug.log("ERROR: No active beacon.", log=True)
         return
 
     cmd = BinjectCommand(args)

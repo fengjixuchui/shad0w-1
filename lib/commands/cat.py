@@ -7,37 +7,41 @@ import argparse
 
 from lib import buildtools
 
-__description__ = "Display the contents of a file on the target machine"
+__description__ = "Show the contents of a file on a target"
 __author__ = "@_batsec_"
+__type__ = "file system"
 
-EXEC_ID   = 0x4000
+EXEC_ID = 0x4000
 OPCODE_LS = 0x2000
 
 ERROR = False
 error_list = ""
 
-# let argparse error and exit nice
+
 def error(message):
     global ERROR, error_list
     ERROR = True
     error_list += f"\033[0;31m{message}\033[0m\n"
 
+
 def exit(status=0, message=None): 
-    if message != None: print(message)
+    if message != None:
+        print(message)
     return
+
 
 def cat_callback(shad0w, data):
     shad0w.debug.log(data, log=True, pre=False)
 
     return ""
 
+
 def main(shad0w, args):
-    
     # check we actually have a beacon
     if shad0w.current_beacon is None:
-        shad0w.debug.error("ERROR: No active beacon")
+        shad0w.debug.error("ERROR: No active beacon.")
         return
-    
+
     # usage examples
     usage_examples = """
 Don't try to cat binary files, it doesnt work very well.
@@ -50,8 +54,8 @@ cat C:\\Users\\thejoker\\Desktop\\evil_plans.txt
 
     # init the parser
     parse = argparse.ArgumentParser(prog='cat',
-                                formatter_class=argparse.RawDescriptionHelpFormatter,
-                                epilog=usage_examples)
+                                    formatter_class=argparse.RawDescriptionHelpFormatter,
+                                    epilog=usage_examples)
     
     # keep it behaving nice
     parse.exit = exit
@@ -60,13 +64,13 @@ cat C:\\Users\\thejoker\\Desktop\\evil_plans.txt
     # setup the args
     parse.add_argument("file", nargs='*', help="file you want to display the contents of")
 
-    # make sure we dont die from weird args
+    # make sure we don't die from weird args
     try:
         args = parse.parse_args(args[1:])
     except:
         pass
     
-    # we need a file to read so if we dont then fail
+    # we need a file to read so if we don't then fail
     if len(args.file) == 0:
         print(error_list) 
         parse.print_help()

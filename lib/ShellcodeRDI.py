@@ -7,8 +7,9 @@ if sys.version_info < (3,0):
 import struct
 from struct import pack
 
-MACHINE_IA64=512
-MACHINE_AMD64=34404
+MACHINE_IA64 = 512
+MACHINE_AMD64 = 34404
+
 
 def is64BitDLL(bytes):
     header_offset = struct.unpack("<L", bytes[60:64])[0]
@@ -16,16 +17,18 @@ def is64BitDLL(bytes):
     if machine == MACHINE_IA64 or machine == MACHINE_AMD64:
         return True   
     return False
-    
+
+
 ror = lambda val, r_bits, max_bits: \
     ((val & (2**max_bits-1)) >> r_bits%max_bits) | \
     (val << (max_bits-(r_bits%max_bits)) & (2**max_bits-1))
 
-def HashFunctionName(name, module = None):
+
+def HashFunctionName(name, module=None):
 
         function = name.encode() + b'\x00'
 
-        if(module):
+        if module:
                 module = module.upper().encode('UTF-16LE') + b'\x00\x00'
 
                 functionHash = 0
@@ -53,6 +56,7 @@ def HashFunctionName(name, module = None):
 
         return functionHash
 
+
 def ConvertToShellcode(dllBytes, functionHash=0x10, userData=b'None', flags=0):
 
     #MARKER:S
@@ -67,13 +71,13 @@ def ConvertToShellcode(dllBytes, functionHash=0x10, userData=b'None', flags=0):
         bootstrap = b''
         bootstrapSize = 64
 
-        # call next instruction (Pushes next instruction address to stack)
+        # call next instruction (pushes next instruction address to stack)
         bootstrap += b'\xe8\x00\x00\x00\x00'
 
         # Set the offset to our DLL from pop result
         dllOffset = bootstrapSize - len(bootstrap) + len(rdiShellcode)
 
-        # pop rcx - Capture our current location in memory
+        # pop rcx - capture our current location in memory
         bootstrap += b'\x59'
 
         # mov r8, rcx - copy our location in memory to r8 before we start modifying RCX
@@ -83,17 +87,17 @@ def ConvertToShellcode(dllBytes, functionHash=0x10, userData=b'None', flags=0):
         bootstrap += b'\x48\x81\xc1'
         bootstrap += pack('I', dllOffset)
 
-        # mov edx, <Hash of function>
+        # mov edx, <hash of function>
         bootstrap += b'\xba'
         bootstrap += pack('I', functionHash)
 
         # Setup the location of our user data
-        # add r8, <Offset of the DLL> + <Length of DLL>
+        # add r8, <offset of the DLL> + <length of DLL>
         bootstrap += b'\x49\x81\xc0'
         userDataLocation = dllOffset + len(dllBytes)
         bootstrap += pack('I', userDataLocation)
 
-        # mov r9d, <Length of User Data>
+        # mov r9d, <length of User Data>
         bootstrap += b'\x41\xb9'
         bootstrap += pack('I', len(userData))
 
@@ -103,27 +107,27 @@ def ConvertToShellcode(dllBytes, functionHash=0x10, userData=b'None', flags=0):
         # mov rsi, rsp - store our current stack pointer for later
         bootstrap += b'\x48\x89\xe6'
 
-        # and rsp, 0x0FFFFFFFFFFFFFFF0 - Align the stack to 16 bytes
+        # and rsp, 0x0FFFFFFFFFFFFFFF0 - align the stack to 16 bytes
         bootstrap += b'\x48\x83\xe4\xf0'
 
-        # sub rsp, 0x30 - Create some breathing room on the stack 
+        # sub rsp, 0x30 - create some breathing room on the stack
         bootstrap += b'\x48\x83\xec'
         bootstrap += b'\x30' # 32 bytes for shadow space + 8 bytes for last arg + 8 bytes for stack alignment
 
-        # mov dword ptr [rsp + 0x20], <Flags> - Push arg 5 just above shadow space
+        # mov dword ptr [rsp + 0x20], <flags> - push arg 5 just above shadow space
         bootstrap += b'\xC7\x44\x24'
         bootstrap += b'\x20'
         bootstrap += pack('I', flags)
 
-        # call - Transfer execution to the RDI
+        # call - transfer execution to the RDI
         bootstrap += b'\xe8'
-        bootstrap += pack('b', bootstrapSize - len(bootstrap) - 4) # Skip over the remainder of instructions
+        bootstrap += pack('b', bootstrapSize - len(bootstrap) - 4) # skip over the remainder of instructions
         bootstrap += b'\x00\x00\x00'
 
-        # mov rsp, rsi - Reset our original stack pointer
+        # mov rsp, rsi - reset our original stack pointer
         bootstrap += b'\x48\x89\xf4'
 
-        # pop rsi - Put things back where we left them
+        # pop rsi - put things back where we left them
         bootstrap += b'\x5e'
 
         # ret - return to caller
@@ -139,16 +143,17 @@ def ConvertToShellcode(dllBytes, functionHash=0x10, userData=b'None', flags=0):
         # User data
         return bootstrap + rdiShellcode + dllBytes + userData
 
-    else: # 32 bit
+    else:
+        # 32 bit
         rdiShellcode = rdiShellcode32
 
         bootstrap = b''
         bootstrapSize = 46
 
-        # call next instruction (Pushes next instruction address to stack)
+        # call next instruction (pushes next instruction address to stack)
         bootstrap += b'\xe8\x00\x00\x00\x00'
 
-        # Set the offset to our DLL from pop result
+        # set the offset to our DLL from pop result
         dllOffset = bootstrapSize - len(bootstrap) + len(rdiShellcode)
 
         # pop eax - Capture our current location in memory
@@ -163,20 +168,20 @@ def ConvertToShellcode(dllBytes, functionHash=0x10, userData=b'None', flags=0):
         # mov ebx, eax - copy our location in memory to ebx before we start modifying eax
         bootstrap += b'\x89\xc3'
 
-        # add eax, <Offset to the DLL>
+        # add eax, <offset to the DLL>
         bootstrap += b'\x05'
         bootstrap += pack('I', dllOffset)
 
-        # add ebx, <Offset to the DLL> + <Size of DLL>
+        # add ebx, <offset to the DLL> + <size of DLL>
         bootstrap += b'\x81\xc3'
         userDataLocation = dllOffset + len(dllBytes)
         bootstrap += pack('I', userDataLocation)
 
-        # push <Flags>
+        # push <flags>
         bootstrap += b'\x68'
         bootstrap += pack('I', flags)
 
-        # push <Length of User Data>
+        # push <length of User Data>
         bootstrap += b'\x68'
         bootstrap += pack('I', len(userData))
 
@@ -190,9 +195,9 @@ def ConvertToShellcode(dllBytes, functionHash=0x10, userData=b'None', flags=0):
         # push eax
         bootstrap += b'\x50'
 
-        # call - Transfer execution to the RDI
+        # call - transfer execution to the RDI
         bootstrap += b'\xe8'
-        bootstrap += pack('b', bootstrapSize - len(bootstrap) - 4) # Skip over the remainder of instructions
+        bootstrap += pack('b', bootstrapSize - len(bootstrap) - 4) # skip over the remainder of instructions
         bootstrap += b'\x00\x00\x00'
 
         # leave

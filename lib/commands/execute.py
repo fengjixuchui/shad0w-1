@@ -6,8 +6,9 @@ import os
 
 from lib import shellcode
 
-__description__ = "Execute a .NET assembly, EXE, DLL, VBS, JS or XSL file in memory on the target"
+__description__ = "Execute a .NET assembly, DLL, EXE, JS, VBS or XSL file in memory"
 __author__ = "@_batsec_"
+__type__ = "module"
 
 # identify the task as shellcode execute
 from lib.basecommand import BaseCommand
@@ -80,7 +81,7 @@ def main(shad0w, args):
 
     # check we actually have a beacon
     if shad0w.current_beacon is None:
-        shad0w.debug.log("ERROR: No active beacon", log=True)
+        shad0w.debug.log("ERROR: No active beacon.", log=True)
         return
 
     cmd = ExecuteCommand(args)

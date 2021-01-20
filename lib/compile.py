@@ -1,8 +1,9 @@
 """
-Compile the stuffz
+Compile the stuff
 """
 
 import os
+
 
 class Binary(object):
     def __init__(self):

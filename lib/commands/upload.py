@@ -8,8 +8,9 @@ import argparse
 
 from lib import buildtools
 
-__description__ = "Upload a file to the target"
+__description__ = "Upload a file to a target"
 __author__ = "@_batsec_"
+__type__ = "file system"
 
 EXEC_ID = 0x3000
 
@@ -20,15 +21,17 @@ error_list = ""
 FILE_TO_UPLOAD = ""
 FILE_DATA      = ""
 
-# let argparse error and exit nice
+
 def error(message):
     global ERROR, error_list
     ERROR = True
     error_list += f"\033[0;31m{message}\033[0m\n"
 
+
 def exit(status=0, message=None): 
     if message != None: print(message)
     return
+
 
 def upload_callback(shad0w, data):
     global FILE_TO_UPLOAD, FILE_DATA
@@ -52,7 +55,7 @@ def main(shad0w, args):
     
     # check we actually have a beacon
     if shad0w.current_beacon is None:
-        shad0w.debug.error("ERROR: No active beacon")
+        shad0w.debug.error("ERROR: No active beacon.")
         return
     
     # usage examples
@@ -65,8 +68,8 @@ upload -f fake_secret_plans.txt -d C:\\Users\\thejoker\\Desktop\\batmans_secret_
 
     # init the parser
     parse = argparse.ArgumentParser(prog='upload',
-                                formatter_class=argparse.RawDescriptionHelpFormatter,
-                                epilog=usage_examples)
+                                    formatter_class=argparse.RawDescriptionHelpFormatter,
+                                    epilog=usage_examples)
     
     # keep it behaving nice
     parse.exit = exit
@@ -76,13 +79,13 @@ upload -f fake_secret_plans.txt -d C:\\Users\\thejoker\\Desktop\\batmans_secret_
     parse.add_argument("-f", "--file", required=True, help="Name of the file you want to upload")
     parse.add_argument("-d", "--destination", nargs="*", help="Destination where the uploaded file should be stored")
 
-    # make sure we dont die from weird args
+    # make sure we don't die from weird args
     try:
         args = parse.parse_args(args[1:])
     except:
         pass
     
-    # we need a file to read so if we dont then fail
+    # we need a file to read so if we don't then fail
     if len(args.file) == 0:
         print(error_list) 
         parse.print_help()

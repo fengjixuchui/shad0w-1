@@ -5,24 +5,28 @@
 import json
 import argparse
 
-__description__ = "List the files in a directory on the target"
+__description__ = "List the files in a directory on a target"
 __author__ = "@_batsec_"
+__type__ = "file system"
 
-EXEC_ID   = 0x4000
+EXEC_ID = 0x4000
 OPCODE_LS = 0x1000
 
 ERROR = False
 error_list = ""
 
-# let argparse error and exit nice
+
 def error(message):
     global ERROR, error_list
     ERROR = True
     error_list += f"\033[0;31m{message}\033[0m\n"
 
+
 def exit(status=0, message=None): 
-    if message != None: print(message)
+    if message is not None:
+        print(message)
     return
+
 
 def get_list_directory(rargs, args):
     # resolve the directory we need to list
@@ -45,6 +49,7 @@ def ls_callback(shad0w, data):
 
     return ""
 
+
 def main(shad0w, args):
 
     # save the raw args
@@ -52,7 +57,7 @@ def main(shad0w, args):
     
     # check we actually have a beacon
     if shad0w.current_beacon is None:
-        shad0w.debug.error("ERROR: No active beacon")
+        shad0w.debug.error("ERROR: No active beacon.")
         return
 
     # usage examples
@@ -66,17 +71,17 @@ ls "C:\\Documents and Settings"
 """
     
     parse = argparse.ArgumentParser(prog='ls',
-                                formatter_class=argparse.RawDescriptionHelpFormatter,
-                                epilog=usage_examples)
-    
+                                    formatter_class=argparse.RawDescriptionHelpFormatter,
+                                    epilog=usage_examples)
+
     # keep it behaving nice
     parse.exit = exit
     parse.error = error
 
     # setup the args
-    parse.add_argument("dir", nargs='*', help="Location of the dir to want to list the contents of")
+    parse.add_argument("dir", nargs='*', help="Location of the dir you want to list the contents of")
 
-    # make sure we dont die from weird args
+    # make sure we don't die from weird args
     try:
         args = parse.parse_args(args[1:])
     except:
@@ -93,7 +98,7 @@ ls "C:\\Documents and Settings"
     dir = get_list_directory(raw_args, args)
 
     # make the json
-    data = {"op" : OPCODE_LS, "args": dir}
+    data = {"op": OPCODE_LS, "args": dir}
     data = json.dumps(data)
 
     # set a task for the current beacon to do

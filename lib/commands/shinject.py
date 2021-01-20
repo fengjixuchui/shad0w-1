@@ -7,12 +7,12 @@ import json
 import base64
 
 from lib import buildtools
+# identify the task as shellcode execute
+from lib.basecommand import BaseCommand
 
 __description__ = "Execute shellcode inside a process"
 __author__ = "@_batsec_"
-
-# identify the task as shellcode execute
-from lib.basecommand import BaseCommand
+__type__ = "process"
 
 DLLINJECT_EXEC_ID = 0x5000
 
@@ -50,8 +50,7 @@ shinject -p 8725 -f shellcode.bin
 
 
 def build_inject_info(args, rcode):
-    # create the json object to tell the beacon
-    # where to execute the code.
+    # create the json object to tell the beacon where to execute the code
 
     info = {"pid": int(args.pid), "dll": rcode}
 
@@ -135,7 +134,7 @@ def main(shad0w, args):
 
     # check we actually have a beacon
     if shad0w.current_beacon is None:
-        shad0w.debug.log("ERROR: No active beacon", log=True)
+        shad0w.debug.log("ERROR: No active beacon.", log=True)
         return
 
     cmd = ShinjectCommand(args)
